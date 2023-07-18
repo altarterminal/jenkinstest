@@ -31,7 +31,7 @@ for arg in ${1+"$@"}
 do
   case "$arg" in
     -h|--help|--version) print_usage_and_exit ;;    
-    -s*)                 opt_s=${arg#-s}      ;;
+    -s)                  opt_s='yes'          ;;
     *)
       if [ $i -eq $# ] && [ -z "$opr" ]; then
         opr=$arg
@@ -59,7 +59,7 @@ isstdout=$opt_s
 # 本体処理
 ######################################################################
 
-if [ "$isstdout" == 'yes' ]; then
+if [ "$isstdout" = 'yes' ]; then
   printf "exit code = %d\n" "$ecode"
 fi
 
