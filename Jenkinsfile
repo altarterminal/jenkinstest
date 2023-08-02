@@ -17,6 +17,7 @@ pipeline {
       stage("build") {
          steps {
             echo "build"
+            sh 'bash ./src/sh/jenkinstest.sh'
          }
       }
       stage("Artifacts") {
