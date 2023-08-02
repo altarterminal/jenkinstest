@@ -1,9 +1,17 @@
 pipeline {
    agent any
+
+   environment {
+     AUTOBUILD_ENABLE = 'YES'
+     AUTOBUILD_NUMBER = "${BUILD_NUMBER}"
+   }
+
    stages {
       stage("Prepare") {
          steps {
             echo "Prepare"
+            echo "AUTOBUILD_ENABLE = ${AUTOBUILD_ENABLE}"
+            echo "AUTOBUILD_NUMBER = ${AUTOBUILD_NUMBER}"
          }
       }
       stage("build") {
