@@ -4,7 +4,7 @@ pipeline {
    environment {
      AUTOBUILD_ENABLE    = 'YES'
      AUTOBUILD_NUMBER    = "${BUILD_NUMBER}"
-     AUTOBUILD_DATE      = "${BUILD_ID}"
+     AUTOBUILD_DATE      = "${BUILD_TIMESTAMP}"
      AUTOBUILD_JOBNAME   = "${JOB_NAME}"
      AUTOBUILD_GITCOMMIT = "${GIT_COMMIT}"
      AUTOBUILD_GITBRANCH = "${GIT_BRANCH}"
