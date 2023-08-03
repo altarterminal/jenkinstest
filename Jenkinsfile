@@ -26,6 +26,7 @@ pipeline {
          steps {
             echo "build"
             sh 'bash ./src/sh/jenkinstest.sh'
+            sh 'printenv'
          }
       }
       stage("Artifacts") {
