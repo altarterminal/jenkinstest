@@ -23,6 +23,10 @@ pipeline {
          }
       }
       stage("build") {
+         agent {
+             label 'unix'
+         }
+
          steps {
             echo "build"
             sh 'bash ./src/sh/jenkinstest.sh'
