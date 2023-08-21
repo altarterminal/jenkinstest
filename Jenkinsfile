@@ -4,13 +4,21 @@ pipeline {
    environment {
      AUTOBUILD_ENABLE    = 'YES'
      AUTOBUILD_NUMBER    = "${BUILD_NUMBER}"
-     AUTOBUILD_DATE      = "${BUILD_ID}"
      AUTOBUILD_JOBNAME   = "${JOB_NAME}"
      AUTOBUILD_GITCOMMIT = "${GIT_COMMIT}"
      AUTOBUILD_GITBRANCH = "${GIT_BRANCH}"
    }
 
    stages {
+      stage("Init") {
+        steps {
+          script {
+            def df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            env.AUTOBUILD_DATE = df.format(new Date())
+          }
+        }
+      }
+
       stage("Prepare") {
          steps {
             echo "Prepare"
