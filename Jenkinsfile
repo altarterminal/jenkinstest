@@ -30,12 +30,10 @@ pipeline {
             echo "AUTOBUILD_JOBNAME   = ${AUTOBUILD_JOBNAME}"
             echo "AUTOBUILD_GITCOMMIT = ${AUTOBUILD_GITCOMMIT}"
             echo "AUTOBUILD_GITBRANCH = ${AUTOBUILD_GITBRANCH}"
-         }
 
-         steps {
-           scripts {
-             sh 'ssh -t jenkins@localhost -p 50001 screen -ls'
-           }
+            scripts {
+              sh 'ssh -t jenkins@localhost -p 50001 screen -ls'
+            }
          }
       }
       stage("build") {
