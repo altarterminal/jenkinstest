@@ -31,6 +31,12 @@ pipeline {
             echo "AUTOBUILD_GITCOMMIT = ${AUTOBUILD_GITCOMMIT}"
             echo "AUTOBUILD_GITBRANCH = ${AUTOBUILD_GITBRANCH}"
          }
+
+         steps {
+           scripts {
+             sh 'ssh -t jenkins@localhost -p 50001 screen -ls'
+           }
+         }
       }
       stage("build") {
          agent {
@@ -42,7 +48,6 @@ pipeline {
             sh 'bash ./src/sh/jenkinstest.sh'
             sh 'printenv'
             sh 'screen -d -m sleep 5'
-            sh 'screen ls'
          }
       }
       stage("Artifacts") {
