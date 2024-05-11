@@ -31,9 +31,7 @@ pipeline {
             echo "AUTOBUILD_GITCOMMIT = ${AUTOBUILD_GITCOMMIT}"
             echo "AUTOBUILD_GITBRANCH = ${AUTOBUILD_GITBRANCH}"
 
-            scripts {
-              sh 'ssh -t jenkins@localhost -p 50001 screen -ls'
-            }
+            sh 'ssh -t jenkins@localhost -p 50001 screen -ls'
          }
       }
       stage("build") {
