@@ -41,7 +41,8 @@ pipeline {
             echo "build"
             sh 'bash ./src/sh/jenkinstest.sh'
             sh 'printenv'
-            sh 'screen -d -m ls'
+            sh 'screen -d -m sleep 5'
+            sh 'screen ls'
          }
       }
       stage("Artifacts") {
