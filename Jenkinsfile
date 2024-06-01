@@ -37,7 +37,7 @@ pipeline {
             sh 'hostname'
             sh 'whoami'
             sh 'who'
-            sh 'echo polltest'
+            sh 'echo ===== polltest ====='
          }
       }
       stage("Artifacts") {
