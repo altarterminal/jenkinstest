@@ -36,6 +36,7 @@ pipeline {
          steps {
             sh 'hostname'
             sh 'whoami'
+            sh 'echo ${AUTOBUILD_GITBRANCH}'
          }
       }
       stage("Artifacts") {
