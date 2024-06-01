@@ -32,15 +32,10 @@ pipeline {
             echo "AUTOBUILD_GITBRANCH = ${AUTOBUILD_GITBRANCH}"
          }
       }
-      stage("build") {
-         agent {
-             label 'unix'
-         }
-
+      stage("Echo") {
          steps {
-            echo "build"
-            sh 'bash ./src/sh/jenkinstest.sh'
-            sh 'printenv'
+            sh 'hostname'
+            sh 'whoami'
          }
       }
       stage("Artifacts") {
