@@ -36,6 +36,7 @@ pipeline {
          steps {
             sh 'hostname'
             sh 'whoami'
+            sh 'who'
          }
       }
       stage("Artifacts") {
