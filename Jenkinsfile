@@ -38,6 +38,7 @@ pipeline {
             sh 'whoami'
             sh 'who'
             sh 'echo ===== polltest ====='
+
          }
       }
       stage("Artifacts") {
