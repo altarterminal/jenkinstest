@@ -49,9 +49,9 @@ pipeline {
    }
    post {
       // 完了ステータスに関係なく実行
-      always {
+      // always {
         // ワークスペースを削除
-        cleanWs()
-      }
+      //  cleanWs()
+      //}
     }
 }
