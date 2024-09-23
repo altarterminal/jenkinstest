@@ -28,9 +28,9 @@ pipeline {
           echo "AUTOBUILD_GITCOMMIT = ${AUTOBUILD_GITCOMMIT}"
           echo "AUTOBUILD_GITBRANCH = ${AUTOBUILD_GITBRANCH}"
 
-          sh 'hostname'
-          sh 'whoami'
-          sh 'pwd'
+          sh 'echo "Host Name = $(hostname)"'
+          sh 'echo "Executor  = $(whoami)"'
+          sh 'echo "Current   = $(pwd)"'
         }
       }
 
