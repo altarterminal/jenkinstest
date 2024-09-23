@@ -6,7 +6,7 @@
   },
   { 
     "url": "https://github.com/altarterminal/jenkinstest.git",
-    "hash": "",
-    "entry": "period/test_entry/run.sh"
+    "hash": "main",
+    "entry": "period/test_entry/fail.sh"
   }
 ]
