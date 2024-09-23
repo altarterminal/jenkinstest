@@ -70,9 +70,9 @@ jq -c '.[]' "${EXEC_LIST}"                                          |
 
 while read -r line;
 do
-  url=$(printf '%s\n' "${line}"    | jq -r '."url"')
-  branch=$(printf '%s\n' "${line}" | jq -r '."branch"')
-  entry=$(printf '%s\n' "${line}"  | jq -r '."entry"')
+  url=$(printf '%s\n' "${line}"    | jq -r '."url" // empty')
+  branch=$(printf '%s\n' "${line}" | jq -r '."branch" // empty')
+  entry=$(printf '%s\n' "${line}"  | jq -r '."entry" // empty')
 
   {
     echo "=========================================================="
@@ -81,6 +81,17 @@ do
     echo "ENTRY  = ${entry}"
     echo "=========================================================="
   } 1>&2
+
+  if [ -z "${url}" ]; then
+    echo "${0##*/}:ERROR: Repository URL must be specified" 1>&2
+    echo "NG:${url}:${branch}:${entry}"
+    continue
+  fi
+  if [ -z "${entry}" ]; then
+    echo "${0##*/}:ERROR: Entry Script must be specified" 1>&2
+    echo "NG:${url}:${branch}:${entry}"
+    continue
+  fi
 
   if "${EACH_EXEC}" -d"${STORE_DIR}" -u"${url}" -b"${branch}" "${entry}" 1>&2; then
     echo "OK:${url}:${branch}:${entry}"
@@ -97,9 +108,9 @@ awk '
 }
 
 END {
-  print "==========================================================="
+  print "=========================================================="
   print "Summary"
   for (i = 1; i <= NR; i++) { print i, buf[i]; }
-  print "==========================================================="
+  print "=========================================================="
 }
 ' 1>&2
