@@ -42,7 +42,7 @@ pipeline {
 
       stage("Main") {
         steps {
-          echo "Main Stage"
+          sh './all_run.sh ./exec_list.json'
         }
       }
    }
