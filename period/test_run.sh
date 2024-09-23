@@ -69,9 +69,9 @@ readonly STORE_DIR='test_store'
 
 LINE=$(jq -c '.[]' "${EXEC_LIST}" | tail -n 1)
 
-URL=$(printf '%s\n' "${LINE}"   | jq -r '."url"')
-BRANCH=$(printf '%s\n' "${LINE}"  | jq -r '."branch"')
-ENTRY=$(printf '%s\n' "${LINE}" | jq -r '."entry"')
+URL=$(printf '%s\n' "${LINE}"    | jq -r '."url" // empty')
+BRANCH=$(printf '%s\n' "${LINE}" | jq -r '."branch" // empty')
+ENTRY=$(printf '%s\n' "${LINE}"  | jq -r '."entry" // empty')
 
 if "${EACH_EXEC}" -d"${STORE_DIR}" -u"${URL}" -b"${BRANCH}" "${ENTRY}" 1>&2; then
   echo "INFO:${0##*/}: succeeded <${URL}:${BRANCH}:${ENTRY}>" 1>&2
