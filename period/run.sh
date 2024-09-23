@@ -71,14 +71,12 @@ do
   dir=$(basename "${url}" '.git')
 
   echo '============================================================='
-  echo "url   = ${url}"
-  echo "hash  = ${hash}"
-  echo "entry = ${entry}"
+  echo "- url   = ${url}"
+  echo "- hash  = ${hash}"
+  echo "- entry = ${entry}"
   echo '============================================================='
 
-  if [ -d "${dir}" ]; then
-    rm -rf "${dir}"
-  fi
+  [ -d "${dir}" ] && rm -rf "${dir}"
 
   if ! git clone "${url}" >/dev/null; then
     echo "${0##*/}:ERROR: the repo is invalid <${url}>" 1>&2
@@ -88,8 +86,10 @@ do
   if [ -z "${hash}" ]; then
     if git -C "${dir}" branch -r | grep -q '^ *origin/master$'; then
       hash='origin/master'
+      echo "${0##*/}:INFO: hash is switched to master" 1>&2
     elif git -C "${dir}" branch -r | grep -q '^ *origin/main$'; then
       hash='origin/main'
+      echo "${0##*/}:INFO: hash is switched to main" 1>&2
     else
       echo "${0##*/}:ERROR: some error for <${url}>" 1>&2
       exit 1
@@ -105,7 +105,6 @@ do
     echo "${0##*/}:ERROR: the entory not exist <${dir}/${entry}>" 1>&2
     exit 1
   fi
-
   if [ ! -x "${dir}/${entry}" ]; then
     echo "${0##*/}:ERROR: the entory not executable <${dir}/${entry}>" 1>&2
     exit 1
