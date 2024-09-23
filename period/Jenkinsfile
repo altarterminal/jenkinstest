@@ -1,0 +1,49 @@
+pipeline {
+   agent any
+
+   environment {
+     AUTOBUILD_ENABLE    = 'YES'
+     AUTOBUILD_NUMBER    = "${BUILD_NUMBER}"
+     AUTOBUILD_JOBNAME   = "${JOB_NAME}"
+     AUTOBUILD_GITCOMMIT = "${GIT_COMMIT}"
+     AUTOBUILD_GITBRANCH = "${GIT_BRANCH}"
+   }
+
+   stages {
+      stage("Init") {
+        steps {
+          script {  
+            env.AUTOBUILD_DATE = sh(script:'date "+%Y%m%d_%H%M%S"', returnStdout: true).trim()
+          }
+        }
+      }
+
+      stage("Check") {
+        steps {
+          echo "Prepare"
+          echo "AUTOBUILD_ENABLE    = ${AUTOBUILD_ENABLE}"
+          echo "AUTOBUILD_NUMBER    = ${AUTOBUILD_NUMBER}"
+          echo "AUTOBUILD_DATE      = ${AUTOBUILD_DATE}"
+          echo "AUTOBUILD_JOBNAME   = ${AUTOBUILD_JOBNAME}"
+          echo "AUTOBUILD_GITCOMMIT = ${AUTOBUILD_GITCOMMIT}"
+          echo "AUTOBUILD_GITBRANCH = ${AUTOBUILD_GITBRANCH}"
+
+          sh 'hostname'
+          sh 'whoami'
+          sh 'pwd'
+        }
+      }
+
+      stage("Prepare") {
+        steps {
+          echo "Prepare Stage"
+        }
+      }
+
+      stage("Main") {
+        steps {
+          echo "Main Stage"
+        }
+      }
+   }
+}
