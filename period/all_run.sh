@@ -55,7 +55,8 @@ if ! jq . "${opr}" >/dev/null 2>&1; then
 fi
 
 readonly EXEC_LIST="${opr}"
-readonly CUR_DIR="$(dirname "$0")"
+readonly CUR_DIR="${0%/*}"
+readonly EACH_EXEC="${CUR_DIR}/each_run.sh"
 
 #####################################################################
 # main routine
@@ -69,33 +70,32 @@ do
   hash=$(printf '%s\n' "${line}"  | jq -r '."hash"')
   entry=$(printf '%s\n' "${line}" | jq -r '."entry"')
 
-  echo "=====================================================" 1>&2;
-  echo "URL   = ${url}"   1>&2
-  echo "HASH  = ${hash}"  1>&2
-  echo "ENTRY = ${entry}" 1>&2
-  echo "=====================================================" 1>&2;
+  {
+    echo "=========================================================="
+    echo "URL   = ${url}"
+    echo "HASH  = ${hash}"
+    echo "ENTRY = ${entry}"
+    echo "=========================================================="
+  } 1>&2
 
-  if "${CUR_DIR}/each_run.sh" -u"${url}" -b"${hash}" "${entry}" 1>&2; then
+  if "${EACH_EXEC}" -u"${url}" -b"${hash}" "${entry}" 1>&2; then
     echo "OK:${url}:${hash}:${entry}"
+    echo "${0##*/}:INFO: succeeded <${url}:${hash}:${entry}>" 1>&2
   else
-    echo "${0##*/}:ERROR: failed <${url}:${hash}:${entry}>" 1>&2
     echo "NG:${url}:${hash}:${entry}"
+    echo "${0##*/}:ERROR: failed <${url}:${hash}:${entry}>" 1>&2
   fi
-done                                                                 |
+done                                                                |
 
 awk '
-{ 
+{
   buf[NR] = $0;
 }
 
 END {
-  print "===========================================" >"/dev/stderr";
-  print "Summary" >"/dev/stderr";
-
-  for (i = 1; i <= NR; i++) {
-    print i, buf[i] >"/dev/stderr";
-  }
-
-  print "===========================================" >"/dev/stderr";
+  print "==========================================================="
+  print "Summary"
+  for (i = 1; i <= NR; i++) { print i, buf[i]; }
+  print "==========================================================="
 }
-'
+' 1>&2
