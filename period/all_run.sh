@@ -27,13 +27,13 @@ opr='task.json'
 i=1
 for arg in ${1+"$@"}
 do
-  case "$arg" in
+  case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     *)
       if [ $i -eq $# ] && [ -z "$opr" ]; then
         opr=$arg
       else
-        echo "${0##*/}: invalid args" 1>&2
+        echo "ERROR:${0##*/}: invalid args" 1>&2
         exit 1
       fi
       ;;
@@ -43,17 +43,17 @@ do
 done
 
 if ! type jq >/dev/null 2>&1; then
-  echo "${0##*/}:ERROR: jq not installed" 1>&2
+  echo "ERROR:${0##*/}: jq not installed" 1>&2
   exit 1
 fi
 
 if [ ! -f "${opr}" ] || [ ! -r "${opr}" ]; then
-  echo "${0##*/}:ERROR: list cannot be accessed <${opr}>" 1>&2
+  echo "ERROR:${0##*/}: list cannot be accessed <${opr}>" 1>&2
   exit 1
 fi
 
 if ! jq . "${opr}" >/dev/null 2>&1; then
-  echo "${0##*/}:ERROR: list is invalid <${opr}>" 1>&2
+  echo "ERROR:${0##*/}: list is invalid <${opr}>" 1>&2
   exit 1
 fi
 
@@ -83,22 +83,22 @@ do
   } 1>&2
 
   if [ -z "${url}" ]; then
-    echo "${0##*/}:ERROR: Repository URL must be specified" 1>&2
+    echo "ERROR:${0##*/}: Repository URL must be specified" 1>&2
     echo "NG:${url}:${branch}:${entry}"
     continue
   fi
   if [ -z "${entry}" ]; then
-    echo "${0##*/}:ERROR: Entry Script must be specified" 1>&2
+    echo "ERROR:${0##*/}: Entry Script must be specified" 1>&2
     echo "NG:${url}:${branch}:${entry}"
     continue
   fi
 
   if "${EACH_EXEC}" -d"${STORE_DIR}" -u"${url}" -b"${branch}" "${entry}" 1>&2; then
     echo "OK:${url}:${branch}:${entry}"
-    echo "${0##*/}:INFO: succeeded <${url}:${branch}:${entry}>" 1>&2
+    echo "ERROR:${0##*/}: succeeded <${url}:${branch}:${entry}>" 1>&2
   else
     echo "NG:${url}:${branch}:${entry}"
-    echo "${0##*/}:ERROR: failed <${url}:${branch}:${entry}>" 1>&2
+    echo "ERROR:${0##*/}: failed <${url}:${branch}:${entry}>" 1>&2
   fi
 done                                                                |
 

@@ -28,13 +28,13 @@ opr='task.json'
 i=1
 for arg in ${1+"$@"}
 do
-  case "$arg" in
+  case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     *)
       if [ $i -eq $# ] && [ -z "$opr" ]; then
         opr=$arg
       else
-        echo "${0##*/}: invalid args" 1>&2
+        echo "ERROR:${0##*/}: invalid args" 1>&2
         exit 1
       fi
       ;;
@@ -44,17 +44,17 @@ do
 done
 
 if ! type jq >/dev/null 2>&1; then
-  echo "${0##*/}:ERROR: jq not installed" 1>&2
+  echo "ERROR:${0##*/}: jq not installed" 1>&2
   exit 1
 fi
 
 if [ ! -f "${opr}" ] || [ ! -r "${opr}" ]; then
-  echo "${0##*/}:ERROR: list cannot be accessed <${opr}>" 1>&2
+  echo "ERROR:${0##*/}: list cannot be accessed <${opr}>" 1>&2
   exit 1
 fi
 
 if ! jq . "${opr}" >/dev/null 2>&1; then
-  echo "${0##*/}:ERROR: list is invalid <${opr}>" 1>&2
+  echo "ERROR:${0##*/}: list is invalid <${opr}>" 1>&2
   exit 1
 fi
 
@@ -74,7 +74,7 @@ BRANCH=$(printf '%s\n' "${LINE}"  | jq -r '."branch"')
 ENTRY=$(printf '%s\n' "${LINE}" | jq -r '."entry"')
 
 if "${EACH_EXEC}" -d"${STORE_DIR}" -u"${URL}" -b"${BRANCH}" "${ENTRY}" 1>&2; then
-  echo "${0##*/}:INFO: succeeded <${URL}:${BRANCH}:${ENTRY}>" 1>&2
+  echo "INFO:${0##*/}: succeeded <${URL}:${BRANCH}:${ENTRY}>" 1>&2
 else
-  echo "${0##*/}:ERROR: failed <${URL}:${BRANCH}:${ENTRY}>" 1>&2
+  echo "ERROR:${0##*/}: failed <${URL}:${BRANCH}:${ENTRY}>" 1>&2
 fi

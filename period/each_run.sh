@@ -32,7 +32,7 @@ opt_d='.'
 i=1
 for arg in ${1+"$@"}
 do
-  case "$arg" in
+  case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     -u*)                 opt_u=${arg#-u}      ;;
     -b*)                 opt_b=${arg#-b}      ;;
@@ -41,7 +41,7 @@ do
       if [ $i -eq $# ] && [ -z "$opr" ]; then
         opr=$arg
       else
-        echo "${0##*/}: invalid args" 1>&2
+        echo "ERROR:${0##*/}: invalid args" 1>&2
         exit 1
       fi
       ;;
@@ -51,23 +51,23 @@ do
 done
 
 if [ -z "${opt_u}" ] ; then
-  echo "${0##*/}:ERROR: repository url must be spefied" 1>&2
+  echo "ERROR:${0##*/}: repository url must be spefied" 1>&2
   exit 1
 fi
 
 if [ -z "${opr}" ] ; then
-  echo "${0##*/}:ERROR: entry script must be specified" 1>&2
+  echo "ERROR:${0##*/}: entry script must be specified" 1>&2
   exit 1
 fi
 
 if [ -e "${opt_d}" ]; then
   if [ ! -d "${opt_d}" ] || [ ! -w "${opt_d}" ]; then
-    echo "${0##*/}:ERROR: invalid directory <${opt_d}>" 1>&2
+    echo "ERROR:${0##*/}: invalid directory <${opt_d}>" 1>&2
     exit 1
   fi
 else
   mkdir -p "${opt_d}"
-  echo "${0##*/}:INFO: made the directory <${opt_d}>" 1>&2
+  echo "INFO:${0##*/}: made the directory <${opt_d}>" 1>&2
 fi
 
 readonly REPO_URL="${opt_u}"
@@ -94,14 +94,14 @@ readonly CLONE_DIR
 
 # download the repository
 if ! git clone "${REPO_URL}" "${CLONE_DIR}" >/dev/null; then
-  echo "${0##*/}:ERROR: the repo is invalid <${REPO_URL}>" 1>&2
+  echo "ERROR:${0##*/}: the repo is invalid <${REPO_URL}>" 1>&2
   exit 1
 fi
 
 # get into the target directory
 trap 'cd ${CUR_DIR}' EXIT
 if ! cd "${CLONE_DIR}"; then
-  echo "${0##*/}:ERROR: cannot move to <${CLONE_DIR}>" 1>&2
+  echo "ERROR:${0##*/}: cannot move to <${CLONE_DIR}>" 1>&2
   exit 1
 fi
 
@@ -109,34 +109,34 @@ fi
 if [ -z "${BRANCH}" ]; then
   if   git branch -r | grep -q '^ *origin/master$'; then
     readonly BRANCH='origin/master'
-    echo "${0##*/}:INFO: hash is switched to <master>" 1>&2
+    echo "INFO:${0##*/}: hash is switched to <master>" 1>&2
   elif git branch -r | grep -q '^ *origin/main$'; then
     readonly BRANCH='origin/main'
-    echo "${0##*/}:INFO: hash is switched to <main>" 1>&2
+    echo "INFO:${0##*/}: hash is switched to <main>" 1>&2
   else
-    echo "${0##*/}:ERROR: some error for <${REPO_URL}>" 1>&2
+    echo "ERROR:${0##*/}: some error for <${REPO_URL}>" 1>&2
     exit 1
   fi
 fi
 
 # checkout
 if ! git checkout "${BRANCH}" >/dev/null; then
-  echo "${0##*/}:ERROR: the branch/hash is invalid <${BRANCH}>" 1>&2
+  echo "ERROR:${0##*/}: the branch/hash is invalid <${BRANCH}>" 1>&2
   exit 1
 fi
 
 # check the script
 if [ ! -f "${ENTRY_SCRIPT}" ]; then
-  echo "${0##*/}:ERROR: the entry not exist <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
+  echo "ERROR:${0##*/}: the entry not exist <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
   exit 1
 fi
 if [ ! -x "${ENTRY_SCRIPT}" ]; then
-  echo "${0##*/}:ERROR: the entry not executable <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
+  echo "ERROR:${0##*/}: the entry not executable <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
   exit 1
 fi
 
 # execute the task
 if ! ./"${ENTRY_SCRIPT}"; then
-  echo "${0##*/}:ERROR: some execution error on <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
+  echo "ERROR:${0##*/}: some execution error on <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
   exit 1
 fi
