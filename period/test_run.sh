@@ -14,6 +14,7 @@ execute a last task on <exec list>.
 This is intended to test when adding a task.
 
 specify the <exec list> (default: task.json).
+cloned repositories are stored in 'test_store'.
 USAGE
   exit 1
 }
@@ -60,6 +61,7 @@ fi
 readonly EXEC_LIST="${opr}"
 readonly CUR_DIR="${0%/*}"
 readonly EACH_EXEC="${CUR_DIR}/each_run.sh"
+readonly STORE_DIR='test_store'
 
 #####################################################################
 # main routine
@@ -71,7 +73,7 @@ URL=$(printf '%s\n' "${LINE}"   | jq -r '."url"')
 BRANCH=$(printf '%s\n' "${LINE}"  | jq -r '."branch"')
 ENTRY=$(printf '%s\n' "${LINE}" | jq -r '."entry"')
 
-if "${EACH_EXEC}" -u"${URL}" -b"${BRANCH}" "${ENTRY}" 1>&2; then
+if "${EACH_EXEC}" -d"${STORE_DIR}" -u"${URL}" -b"${BRANCH}" "${ENTRY}" 1>&2; then
   echo "${0##*/}:INFO: succeeded <${URL}:${BRANCH}:${ENTRY}>" 1>&2
 else
   echo "${0##*/}:ERROR: failed <${URL}:${BRANCH}:${ENTRY}>" 1>&2

@@ -8,13 +8,14 @@ set -eu
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
 Usage   : ${0##*/} -u<repo url> -b<branch or hash> <entry script>
-Options :
+Options : -d<repo dir>
 
 execute a task with <entry script> on <repo url> and <branch or hash>.
 entry script must be specified with relative path to the top of the repo.
 
 -u: specify the repository url.
 -b: specify the branch or hash. master/main is used if nothing is specified.
+-d: specify the directory in which the repositories are cloned (default: .)
 USAGE
   exit 1
 }
@@ -26,6 +27,7 @@ USAGE
 opr=''
 opt_u=''
 opt_b=''
+opt_d='.'
 
 i=1
 for arg in ${1+"$@"}
@@ -34,6 +36,7 @@ do
     -h|--help|--version) print_usage_and_exit ;;
     -u*)                 opt_u=${arg#-u}      ;;
     -b*)                 opt_b=${arg#-b}      ;;
+    -d*)                 opt_d=${arg#-d}      ;;
     *)
       if [ $i -eq $# ] && [ -z "$opr" ]; then
         opr=$arg
@@ -57,8 +60,19 @@ if [ -z "${opr}" ] ; then
   exit 1
 fi
 
+if [ -e "${opt_d}" ]; then
+  if [ ! -d "${opt_d}" ] || [ ! -w "${opt_d}" ]; then
+    echo "${0##*/}:ERROR: invalid directory <${opt_d}>" 1>&2
+    exit 1
+  fi
+else
+  mkdir -p "${opt_d}"
+  echo "${0##*/}:INFO: made the directory <${opt_d}>" 1>&2
+fi
+
 readonly REPO_URL="${opt_u}"
 readonly ENTRY_SCRIPT="${opr}"
+readonly STORE_DIR="${opt_d}"
 
 if [ -z "${opt_b}" ]; then
   BRANCH="${opt_b}"
@@ -68,7 +82,7 @@ fi
 
 CUR_DIR=$(pwd)
 readonly CUR_DIR
-CLONE_DIR=$(basename "${REPO_URL}" '.git')
+CLONE_DIR=${STORE_DIR}/$(basename "${REPO_URL}" '.git')
 readonly CLONE_DIR
 
 #####################################################################
@@ -79,7 +93,7 @@ readonly CLONE_DIR
 [ -d "${CLONE_DIR}" ] && rm -rf "${CLONE_DIR}"
 
 # download the repository
-if ! git clone "${REPO_URL}" >/dev/null; then
+if ! git clone "${REPO_URL}" "${CLONE_DIR}" >/dev/null; then
   echo "${0##*/}:ERROR: the repo is invalid <${REPO_URL}>" 1>&2
   exit 1
 fi

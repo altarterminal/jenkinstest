@@ -13,6 +13,7 @@ Options :
 execute tasks on <exec list>.
 
 specify the <exec list> (default: task.json).
+cloned repositories are stored in 'all_store'.
 USAGE
   exit 1
 }
@@ -59,6 +60,7 @@ fi
 readonly EXEC_LIST="${opr}"
 readonly CUR_DIR="${0%/*}"
 readonly EACH_EXEC="${CUR_DIR}/each_run.sh"
+readonly STORE_DIR='all_store'
 
 #####################################################################
 # main routine
@@ -80,7 +82,7 @@ do
     echo "=========================================================="
   } 1>&2
 
-  if "${EACH_EXEC}" -u"${url}" -b"${branch}" "${entry}" 1>&2; then
+  if "${EACH_EXEC}" -d"${STORE_DIR}" -u"${url}" -b"${branch}" "${entry}" 1>&2; then
     echo "OK:${url}:${branch}:${entry}"
     echo "${0##*/}:INFO: succeeded <${url}:${branch}:${entry}>" 1>&2
   else
