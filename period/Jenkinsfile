@@ -44,7 +44,7 @@ pipeline {
         steps {
           sh '''
           cd period 
-          ./all_run.sh task.json
+          PATH="${PATH}:/opt/homebrew/bin" ./all_run.sh task.json
           '''
         }
       }
