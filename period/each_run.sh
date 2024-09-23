@@ -7,14 +7,14 @@ set -eu
 
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
-Usage   : ${0##*/} -u<repo url> -b<hash or branch> <entry script>
+Usage   : ${0##*/} -u<repo url> -b<branch or hash> <entry script>
 Options :
 
-execute a task with <entry script> on <repo url> and <hash or branch>.
+execute a task with <entry script> on <repo url> and <branch or hash>.
 entry script must be specified with relative path to the top of the repo.
 
 -u: specify the repository url.
--b: specify the hash or branch. master/main is used if nothing is specified.
+-b: specify the branch or hash. master/main is used if nothing is specified.
 USAGE
   exit 1
 }
@@ -61,9 +61,9 @@ readonly REPO_URL="${opt_u}"
 readonly ENTRY_SCRIPT="${opr}"
 
 if [ -z "${opt_b}" ]; then
-  HASH="${opt_b}"
+  BRANCH="${opt_b}"
 else
-  readonly HASH="${opt_b}"
+  readonly BRANCH="${opt_b}"
 fi
 
 CUR_DIR=$(pwd)
@@ -92,12 +92,12 @@ if ! cd "${CLONE_DIR}"; then
 fi
 
 # select the default branch
-if [ -z "${HASH}" ]; then
+if [ -z "${BRANCH}" ]; then
   if   git branch -r | grep -q '^ *origin/master$'; then
-    readonly HASH='origin/master'
+    readonly BRANCH='origin/master'
     echo "${0##*/}:INFO: hash is switched to <master>" 1>&2
   elif git branch -r | grep -q '^ *origin/main$'; then
-    readonly HASH='origin/main'
+    readonly BRANCH='origin/main'
     echo "${0##*/}:INFO: hash is switched to <main>" 1>&2
   else
     echo "${0##*/}:ERROR: some error for <${REPO_URL}>" 1>&2
@@ -106,8 +106,8 @@ if [ -z "${HASH}" ]; then
 fi
 
 # checkout
-if ! git checkout "${HASH}" >/dev/null; then
-  echo "${0##*/}:ERROR: the hash is invalid <${HASH}>" 1>&2
+if ! git checkout "${BRANCH}" >/dev/null; then
+  echo "${0##*/}:ERROR: the branch/hash is invalid <${BRANCH}>" 1>&2
   exit 1
 fi
 

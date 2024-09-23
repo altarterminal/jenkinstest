@@ -66,24 +66,24 @@ jq -c '.[]' "${EXEC_LIST}"                                          |
 
 while read -r line;
 do
-  url=$(printf '%s\n' "${line}"   | jq -r '."url"')
-  hash=$(printf '%s\n' "${line}"  | jq -r '."hash"')
-  entry=$(printf '%s\n' "${line}" | jq -r '."entry"')
+  url=$(printf '%s\n' "${line}"    | jq -r '."url"')
+  branch=$(printf '%s\n' "${line}" | jq -r '."branch"')
+  entry=$(printf '%s\n' "${line}"  | jq -r '."entry"')
 
   {
     echo "=========================================================="
-    echo "URL   = ${url}"
-    echo "HASH  = ${hash}"
-    echo "ENTRY = ${entry}"
+    echo "URL    = ${url}"
+    echo "BRANCH = ${branch}"
+    echo "ENTRY  = ${entry}"
     echo "=========================================================="
   } 1>&2
 
-  if "${EACH_EXEC}" -u"${url}" -b"${hash}" "${entry}" 1>&2; then
-    echo "OK:${url}:${hash}:${entry}"
-    echo "${0##*/}:INFO: succeeded <${url}:${hash}:${entry}>" 1>&2
+  if "${EACH_EXEC}" -u"${url}" -b"${branch}" "${entry}" 1>&2; then
+    echo "OK:${url}:${branch}:${entry}"
+    echo "${0##*/}:INFO: succeeded <${url}:${branch}:${entry}>" 1>&2
   else
-    echo "NG:${url}:${hash}:${entry}"
-    echo "${0##*/}:ERROR: failed <${url}:${hash}:${entry}>" 1>&2
+    echo "NG:${url}:${branch}:${entry}"
+    echo "${0##*/}:ERROR: failed <${url}:${branch}:${entry}>" 1>&2
   fi
 done                                                                |
 
