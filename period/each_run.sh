@@ -93,7 +93,7 @@ readonly CLONE_DIR
 [ -d "${CLONE_DIR}" ] && rm -rf "${CLONE_DIR}"
 
 # download the repository
-if ! git clone "${REPO_URL}" "${CLONE_DIR}" >/dev/null; then
+if ! git clone "${REPO_URL}" "${CLONE_DIR}"; then
   echo "ERROR:${0##*/}: the repo is invalid <${REPO_URL}>" 1>&2
   exit 1
 fi
@@ -120,7 +120,7 @@ if [ -z "${BRANCH}" ]; then
 fi
 
 # checkout
-if ! git checkout "${BRANCH}" >/dev/null; then
+if ! git checkout "${BRANCH}"; then
   echo "ERROR:${0##*/}: the branch/hash is invalid <${BRANCH}>" 1>&2
   exit 1
 fi
