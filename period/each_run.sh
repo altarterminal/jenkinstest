@@ -1,5 +1,5 @@
 #!/bin/sh
-set -u
+set -eu
 
 #####################################################################
 # help
@@ -7,13 +7,14 @@ set -u
 
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
-Usage   : ${0##*/} -u<url> -b<hash> <entry>
+Usage   : ${0##*/} -u<repo url> -b<hash or branch> <entry script>
 Options :
 
-execute tasks by <entry> on <url> and <hash>
+execute a task with <entry script> on <repo url> and <hash or branch>.
+entry script must be specified with relative path to the top of the repo.
 
--u: specify the repository url
--b: specify the hash or branch
+-u: specify the repository url.
+-b: specify the hash or branch. master/main is used if nothing is specified.
 USAGE
   exit 1
 }
@@ -65,57 +66,63 @@ else
   readonly HASH="${opt_b}"
 fi
 
+CUR_DIR=$(pwd)
+readonly CUR_DIR
+CLONE_DIR=$(basename "${REPO_URL}" '.git')
+readonly CLONE_DIR
+
 #####################################################################
 # main routine
 #####################################################################
 
-CLONE_DIR=$(basename "${REPO_URL}" '.git')
-
+# clean the previous
 [ -d "${CLONE_DIR}" ] && rm -rf "${CLONE_DIR}"
 
-echo "${0##*/}:INFO: start clone" 1>&2
+# download the repository
 if ! git clone "${REPO_URL}" >/dev/null; then
   echo "${0##*/}:ERROR: the repo is invalid <${REPO_URL}>" 1>&2
   exit 1
 fi
 
+# get into the target directory
+trap 'cd ${CUR_DIR}' EXIT
+if ! cd "${CLONE_DIR}"; then
+  echo "${0##*/}:ERROR: cannot move to <${CLONE_DIR}>" 1>&2
+  exit 1
+fi
+
+# select the default branch
 if [ -z "${HASH}" ]; then
-  if git -C "${CLONE_DIR}" branch -r | grep -q '^ *origin/master$'; then
+  if   git branch -r | grep -q '^ *origin/master$'; then
     readonly HASH='origin/master'
-    echo "${0##*/}:INFO: hash is switched to master" 1>&2
-  elif git -C "${CLONE_DIR}" branch -r | grep -q '^ *origin/main$'; then
+    echo "${0##*/}:INFO: hash is switched to <master>" 1>&2
+  elif git branch -r | grep -q '^ *origin/main$'; then
     readonly HASH='origin/main'
-    echo "${0##*/}:INFO: hash is switched to main" 1>&2
+    echo "${0##*/}:INFO: hash is switched to <main>" 1>&2
   else
     echo "${0##*/}:ERROR: some error for <${REPO_URL}>" 1>&2
     exit 1
   fi
 fi
 
-echo "${0##*/}:INFO: start checkout" 1>&2
-if ! git -C "${CLONE_DIR}" checkout "${HASH}" >/dev/null; then
+# checkout
+if ! git checkout "${HASH}" >/dev/null; then
   echo "${0##*/}:ERROR: the hash is invalid <${HASH}>" 1>&2
   exit 1
 fi
 
-if [ ! -f "${CLONE_DIR}/${ENTRY_SCRIPT}" ]; then
-  echo "${0##*/}:ERROR: the entory not exist <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
+# check the script
+if [ ! -f "${ENTRY_SCRIPT}" ]; then
+  echo "${0##*/}:ERROR: the entry not exist <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
   exit 1
 fi
-if [ ! -x "${CLONE_DIR}/${ENTRY_SCRIPT}" ]; then
-  echo "${0##*/}:ERROR: the entory not executable <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
+if [ ! -x "${ENTRY_SCRIPT}" ]; then
+  echo "${0##*/}:ERROR: the entry not executable <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
   exit 1
 fi
 
-echo "${0##*/}:INFO: start execution" 1>&2
-(
-  if ! cd "${CLONE_DIR}"; then
-    echo "${0##*/}:ERROR: cannot move to <${CLONE_DIR}>" 1>&2
-    exit 1
-  fi
-
-  if ! ./"${ENTRY_SCRIPT}"; then
-    echo "${0##*/}:ERROR: some execution error on <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
-    exit 1
-  fi
-)
+# execute the task
+if ! ./"${ENTRY_SCRIPT}"; then
+  echo "${0##*/}:ERROR: some execution error on <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
+  exit 1
+fi
