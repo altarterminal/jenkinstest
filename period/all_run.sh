@@ -10,7 +10,9 @@ print_usage_and_exit () {
 Usage   : ${0##*/} <exec list>
 Options :
 
-execute tasks on <exec list>
+execute tasks on <exec list>.
+
+specify the <exec list> (default: task.json).
 USAGE
   exit 1
 }
@@ -19,7 +21,7 @@ USAGE
 # parameter
 #####################################################################
 
-opr=''
+opr='task.json'
 
 i=1
 for arg in ${1+"$@"}

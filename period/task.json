@@ -8,5 +8,10 @@
     "url": "https://github.com/altarterminal/jenkinstest.git",
     "branch": "main",
     "entry": "period/test_entry/fail.sh"
+  },
+  {
+    "url": "https://github.com/altarterminal/jenkinstest.git",
+    "branch": "main",
+    "entry": "period/test_entry/run.sh"
   }
 ]
