@@ -42,7 +42,10 @@ pipeline {
 
       stage("Main") {
         steps {
-          sh './all_run.sh ./exec_list.json'
+          sh '''
+          cd period 
+          ./all_run.sh exec_list.json
+          '''
         }
       }
    }
