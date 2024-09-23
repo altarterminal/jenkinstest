@@ -82,17 +82,6 @@ do
     echo "=========================================================="
   } 1>&2
 
-  if [ -z "${url}" ]; then
-    echo "ERROR:${0##*/}: Repository URL must be specified" 1>&2
-    echo "NG:${url}:${branch}:${entry}"
-    continue
-  fi
-  if [ -z "${entry}" ]; then
-    echo "ERROR:${0##*/}: Entry Script must be specified" 1>&2
-    echo "NG:${url}:${branch}:${entry}"
-    continue
-  fi
-
   if "${EACH_EXEC}" -d"${STORE_DIR}" -u"${url}" -b"${branch}" "${entry}" 1>&2; then
     echo "OK:${url}:${branch}:${entry}"
     echo "ERROR:${0##*/}: succeeded <${url}:${branch}:${entry}>" 1>&2
