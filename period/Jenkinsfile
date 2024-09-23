@@ -44,7 +44,7 @@ pipeline {
         steps {
           sh '''
           cd period 
-          ./all_run.sh exec_list.json
+          ./all_run.sh task.json
           '''
         }
       }
