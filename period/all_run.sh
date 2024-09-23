@@ -54,7 +54,8 @@ if ! jq . "${opr}" >/dev/null 2>&1; then
   exit 1
 fi
 
-readonly EXEC_LIST=${opr}
+readonly EXEC_LIST="${opr}"
+readonly CUR_DIR="$(dirname "$0")"
 
 #####################################################################
 # main routine
@@ -68,50 +69,33 @@ do
   hash=$(printf '%s\n' "${line}"  | jq -r '."hash"')
   entry=$(printf '%s\n' "${line}" | jq -r '."entry"')
 
-  dir=$(basename "${url}" '.git')
+  echo "=====================================================" 1>&2;
+  echo "URL   = ${url}"   1>&2
+  echo "HASH  = ${hash}"  1>&2
+  echo "ENTRY = ${entry}" 1>&2
+  echo "=====================================================" 1>&2;
 
-  echo '============================================================='
-  echo "- url   = ${url}"
-  echo "- hash  = ${hash}"
-  echo "- entry = ${entry}"
-  echo '============================================================='
-
-  [ -d "${dir}" ] && rm -rf "${dir}"
-
-  if ! git clone "${url}" >/dev/null; then
-    echo "${0##*/}:ERROR: the repo is invalid <${url}>" 1>&2
-    exit 1
+  if "${CUR_DIR}/each_run.sh" -u"${url}" -b"${hash}" "${entry}" 1>&2; then
+    echo "OK:${url}:${hash}:${entry}"
+  else
+    echo "${0##*/}:ERROR: failed <${url}:${hash}:${entry}>" 1>&2
+    echo "NG:${url}:${hash}:${entry}"
   fi
+done                                                                 |
 
-  if [ -z "${hash}" ]; then
-    if git -C "${dir}" branch -r | grep -q '^ *origin/master$'; then
-      hash='origin/master'
-      echo "${0##*/}:INFO: hash is switched to master" 1>&2
-    elif git -C "${dir}" branch -r | grep -q '^ *origin/main$'; then
-      hash='origin/main'
-      echo "${0##*/}:INFO: hash is switched to main" 1>&2
-    else
-      echo "${0##*/}:ERROR: some error for <${url}>" 1>&2
-      exit 1
-    fi
-  fi
+awk '
+{ 
+  buf[NR] = $0;
+}
 
-  if ! git -C "${dir}" checkout "${hash}" >/dev/null; then
-    echo "${0##*/}:ERROR: the hash is invalid <${hash}>" 1>&2
-    exit 1
-  fi
+END {
+  print "===========================================" >"/dev/stderr";
+  print "Summary" >"/dev/stderr";
 
-  if [ ! -f "${dir}/${entry}" ]; then
-    echo "${0##*/}:ERROR: the entory not exist <${dir}/${entry}>" 1>&2
-    exit 1
-  fi
-  if [ ! -x "${dir}/${entry}" ]; then
-    echo "${0##*/}:ERROR: the entory not executable <${dir}/${entry}>" 1>&2
-    exit 1
-  fi
+  for (i = 1; i <= NR; i++) {
+    print i, buf[i] >"/dev/stderr";
+  }
 
-  (
-    cd "${dir}"
-    ./"${entry}"
-  )
-done
+  print "===========================================" >"/dev/stderr";
+}
+'
