@@ -99,7 +99,7 @@ if ! git clone "${REPO_URL}" "${CLONE_DIR}" >/dev/null; then
 fi
 
 # get into the target directory
-trap 'cd ${CUR_DIR}' EXIT
+trap 'cd "${CUR_DIR}"' EXIT
 if ! cd "${CLONE_DIR}"; then
   echo "ERROR:${0##*/}: cannot move to <${CLONE_DIR}>" 1>&2
   exit 1
