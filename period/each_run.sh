@@ -38,8 +38,8 @@ do
     -b*)                 opt_b=${arg#-b}      ;;
     -d*)                 opt_d=${arg#-d}      ;;
     *)
-      if [ $i -eq $# ] && [ -z "$opr" ]; then
-        opr=$arg
+      if [ $i -eq $# ] && [ -z "${opr}" ]; then
+        opr=${arg}
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
         exit 1

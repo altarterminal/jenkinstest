@@ -31,7 +31,7 @@ do
     -h|--help|--version) print_usage_and_exit ;;
     *)
       if [ $i -eq $# ]; then
-        opr=$arg
+        opr=${arg}
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
         exit 1
@@ -84,7 +84,7 @@ do
 
   if "${EACH_EXEC}" -d"${STORE_DIR}" -u"${url}" -b"${branch}" "${entry}" 1>&2; then
     echo "OK:${url}:${branch}:${entry}"
-    echo "ERROR:${0##*/}: succeeded <${url}:${branch}:${entry}>" 1>&2
+    echo "INFO:${0##*/}: succeeded <${url}:${branch}:${entry}>" 1>&2
   else
     echo "NG:${url}:${branch}:${entry}"
     echo "ERROR:${0##*/}: failed <${url}:${branch}:${entry}>" 1>&2

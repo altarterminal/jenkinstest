@@ -31,8 +31,8 @@ do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
     *)
-      if [ $i -eq $# ] && [ -z "$opr" ]; then
-        opr=$arg
+      if [ $i -eq $# ]; then
+        opr=${arg}
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
         exit 1
