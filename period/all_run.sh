@@ -99,7 +99,17 @@ awk '
 END {
   print "=========================================================="
   print "Summary"
-  for (i = 1; i <= NR; i++) { print i, buf[i]; }
+
+  is_error = "no";
+
+  for (i = 1; i <= NR; i++) {
+    print i, buf[i];
+
+    if (buf[i] ~ /^NG:/) { is_error = "yes"; }
+  }
+
   print "=========================================================="
+
+  if (is_error == "yes") { exit 1; }
 }
 ' 1>&2
