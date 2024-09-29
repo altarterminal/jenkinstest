@@ -71,7 +71,7 @@ else
 fi
 
 readonly REPO_URL="${opt_u}"
-readonly ENTRY_SCRIPT="${opr}"
+readonly ENTRY_PATH="${opr}"
 readonly STORE_DIR="${opt_d}"
 
 if [ -z "${opt_b}" ]; then
@@ -84,6 +84,8 @@ CUR_DIR=$(pwd)
 readonly CUR_DIR
 CLONE_DIR=${STORE_DIR}/$(basename "${REPO_URL}" '.git')
 readonly CLONE_DIR
+EXEC_DIR=$(dirname "${ENTRY_PATH}")
+ENTRY_SCRIPT=$(basename "${ENTRY_PATH}")
 
 #####################################################################
 # main routine
@@ -125,18 +127,24 @@ if ! git checkout "${BRANCH}"; then
   exit 1
 fi
 
+# change the current directory
+if ! cd "${EXEC_DIR}"; then
+  echo "ERROR:${0##*/}: cannot move to <${EXEC_DIR}>" 1>&2
+  exit 1
+fi
+
 # check the script
 if [ ! -f "${ENTRY_SCRIPT}" ]; then
-  echo "ERROR:${0##*/}: the entry not exist <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
+  echo "ERROR:${0##*/}: the entry not exist <${CLONE_DIR}/${ENTRY_PATH}>" 1>&2
   exit 1
 fi
 if [ ! -x "${ENTRY_SCRIPT}" ]; then
-  echo "ERROR:${0##*/}: the entry not executable <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
+  echo "ERROR:${0##*/}: the entry not executable <${CLONE_DIR}/${ENTRY_PATH}>" 1>&2
   exit 1
 fi
 
 # execute the task
 if ! ./"${ENTRY_SCRIPT}"; then
-  echo "ERROR:${0##*/}: some execution error on <${CLONE_DIR}/${ENTRY_SCRIPT}>" 1>&2
+  echo "ERROR:${0##*/}: some execution error on <${CLONE_DIR}/${ENTRY_PATH}>" 1>&2
   exit 1
 fi
