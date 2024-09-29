@@ -58,9 +58,30 @@ if ! jq . "${opr}" >/dev/null 2>&1; then
 fi
 
 readonly EXEC_LIST="${opr}"
+
 readonly CUR_DIR="${0%/*}"
 readonly EACH_EXEC="${CUR_DIR}/each_run.sh"
-readonly STORE_DIR='all_store'
+readonly SETUP_ANSIBLE="${CUR_DIR}/setup_ansible.sh"
+readonly STORE_DIR="${CUR_DIR}/all_store"
+
+readonly ANSIBLE_ENV_PATH="${HOME}/period_ws/ansible_env"
+readonly ANSIBLE_ACTIVATE="${ANSIBLE_ENV_PATH}/bin/activate"
+
+#####################################################################
+# prepare
+#####################################################################
+
+# check ansible
+if ! type ansible >/dev/null 2>&1; then
+  # make ansible environment if there is not
+  if [ ! -f "${ANSIBLE_ACTIVATE}" ] || [ ! -r "${ANSIBLE_ACTIVATE}" ]; then
+    echo "INFO:${0##*/}: install ansible environment" 1>&2
+    "${SETUP_ANSIBLE}" "${ANSIBLE_ENV_PATH}"
+  fi
+
+  # enable ansible
+  . "${ANSIBLE_ACTIVATE}"
+fi
 
 #####################################################################
 # main routine
