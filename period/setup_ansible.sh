@@ -11,7 +11,8 @@ Usage   : ${0##*/} <env path>
 Options : -f
 
 setup python's venv on <env path>.
-ansible will be installed on the venv.
+if the environment <env path> include the ansible, nothing will be done.
+otherwise, ansible will be installed on the venv.
 
 -f: enable the force install (delete the existing directory).
 USAGE
@@ -62,15 +63,31 @@ fi
 readonly ENV_PATH="${opr}"
 readonly IS_FORCE="${opt_f}"
 
+readonly ACTIVATE_PATH="${ENV_PATH}/bin/activate"
+
 #####################################################################
 # main routine
 #####################################################################
 
-# check the existing directory
-if [ "${IS_FORCE}" = 'yes' ]; then
-  rm -rf "${ENV_PATH}"
-  echo "INFO:${0##*/}: deleted the old directory <${ENV_PATH}>" 1>&2
+# check if the existing environment works for ansible
+if [ -f "${ACTIVATE_PATH}" ] && [ -r "${ACTIVATE_PATH}" ]; then
+  . "${ACTIVATE_PATH}"
+
+  if type ansible >/dev/null 2>&1; then
+    echo "INFO:${0##*/}: ansible is found on existing <${ENV_PATH}>" 1>&2
+    exit 0
+  fi
+
+  deactivate
 fi
+
+# delete the old environment if it is forced
+if [ "${IS_FORCE}" = 'yes' ]; then
+  [ -d "${ENV_PATH}" ] && rm -r "${ENV_PATH}"
+  echo "INFO:${0##*/}: deleted the old environment <${ENV_PATH}>" 1>&2
+fi
+
+# check if the environment path exists
 if [ -d "${ENV_PATH}" ]; then
   echo "ERROR:${0##*/}: there is the existing directory <${ENV_PATH}>" 1>&2
   exit 1
@@ -81,11 +98,11 @@ mkdir -p "$(dirname "${ENV_PATH}")"
 python3 -m venv "${ENV_PATH}"
 
 # install the ansible
-. "${ENV_PATH}/bin/activate"
+. "${ACTIVATE_PATH}"
 pip install ansible
 
 # check the ansible has been installed
 if ! type ansible >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: ansible has not been installed for some reason" 1>&2
+  echo "ERROR:${0##*/}: ansible has not been installed for some reasons" 1>&2
   exit 1
 fi
