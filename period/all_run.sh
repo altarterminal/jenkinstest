@@ -13,7 +13,9 @@ Options :
 execute tasks on <exec list>.
 
 specify the <exec list> (default: task.json).
+
 cloned repositories are stored in 'all_store'.
+ansible environment is used or made on '${HOME}/period_ws/ansible_env'
 USAGE
   exit 1
 }
@@ -61,26 +63,22 @@ readonly EXEC_LIST="${opr}"
 
 readonly CUR_DIR="${0%/*}"
 readonly EACH_EXEC="${CUR_DIR}/each_run.sh"
-readonly SETUP_ANSIBLE="${CUR_DIR}/setup_ansible.sh"
 readonly STORE_DIR="${CUR_DIR}/all_store"
 
+readonly ANSIBLE_SETUP="${CUR_DIR}/setup_ansible.sh"
 readonly ANSIBLE_ENV_PATH="${HOME}/period_ws/ansible_env"
-readonly ANSIBLE_ACTIVATE="${ANSIBLE_ENV_PATH}/bin/activate"
 
 #####################################################################
 # prepare
 #####################################################################
 
-# check ansible
+# prepare ansible
 if ! type ansible >/dev/null 2>&1; then
-  # make ansible environment if there is not
-  if [ ! -f "${ANSIBLE_ACTIVATE}" ] || [ ! -r "${ANSIBLE_ACTIVATE}" ]; then
-    echo "INFO:${0##*/}: install ansible environment" 1>&2
-    "${SETUP_ANSIBLE}" "${ANSIBLE_ENV_PATH}"
-  fi
+  # check ansible env. install it if it is not found
+  ./"${ANSIBLE_SETUP}" "${ANSIBLE_ENV_PATH}"
 
   # enable ansible
-  . "${ANSIBLE_ACTIVATE}"
+  . "${ANSIBLE_ENV_PATH}/bin/activate"
 fi
 
 #####################################################################
