@@ -69,6 +69,12 @@ readonly ACTIVATE_PATH="${ENV_PATH}/bin/activate"
 # main routine
 #####################################################################
 
+# delete the old environment if it is forced
+if [ "${IS_FORCE}" = 'yes' ]; then
+  [ -d "${ENV_PATH}" ] && rm -r "${ENV_PATH}"
+  echo "INFO:${0##*/}: deleted the old environment <${ENV_PATH}>" 1>&2
+fi
+
 # check if the existing environment works for ansible
 if [ -f "${ACTIVATE_PATH}" ] && [ -r "${ACTIVATE_PATH}" ]; then
   . "${ACTIVATE_PATH}"
@@ -79,12 +85,6 @@ if [ -f "${ACTIVATE_PATH}" ] && [ -r "${ACTIVATE_PATH}" ]; then
   fi
 
   deactivate
-fi
-
-# delete the old environment if it is forced
-if [ "${IS_FORCE}" = 'yes' ]; then
-  [ -d "${ENV_PATH}" ] && rm -r "${ENV_PATH}"
-  echo "INFO:${0##*/}: deleted the old environment <${ENV_PATH}>" 1>&2
 fi
 
 # check if the environment path exists
