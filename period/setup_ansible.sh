@@ -70,8 +70,8 @@ readonly ACTIVATE_PATH="${ENV_PATH}/bin/activate"
 #####################################################################
 
 # delete the old environment if it is forced
-if [ "${IS_FORCE}" = 'yes' ]; then
-  [ -d "${ENV_PATH}" ] && rm -r "${ENV_PATH}"
+if [ "${IS_FORCE}" = 'yes' ] && [ -d "${ENV_PATH}" ]; then
+  rm -r "${ENV_PATH}"
   echo "INFO:${0##*/}: deleted the old environment <${ENV_PATH}>" 1>&2
 fi
 
