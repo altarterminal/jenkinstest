@@ -10,8 +10,8 @@ print_usage_and_exit () {
 Usage   : ${0##*/} -u<repo url> -b<branch or hash> <entry script>
 Options : -d<repo dir>
 
-execute a task with <entry script> on <repo url> and <branch or hash>.
-entry script must be specified with relative path to the top of the repo.
+Execute a task with <entry script> on <repo url> and <branch or hash>.
+Entry script must be specified with relative path to the top of the repo.
 
 -u: specify the repository url.
 -b: specify the branch or hash. master/main is used if nothing is specified.
@@ -70,22 +70,24 @@ else
   echo "INFO:${0##*/}: made the directory <${opt_d}>" 1>&2
 fi
 
-readonly REPO_URL="${opt_u}"
 readonly ENTRY_PATH="${opr}"
-readonly STORE_DIR="${opt_d}"
+readonly REPO_URL="${opt_u}"
+readonly BRANCH="${opt_b}"
+readonly CLONE_TOP_DIR="${opt_d}"
 
-if [ -z "${opt_b}" ]; then
-  BRANCH="${opt_b}"
-else
-  readonly BRANCH="${opt_b}"
+if [ -n "${BRANCH}" ]; then
+  readonly BRANCH
 fi
 
 CUR_DIR=$(pwd)
+CLONE_DIR=${CLONE_TOP_DIR}/$(basename "${REPO_URL}" '.git')
+EXEC_DIR="${ENTRY_PATH%/*}"
+ENTRY_SCRIPT="${ENTRY_PATH##*/}"
+
 readonly CUR_DIR
-CLONE_DIR=${STORE_DIR}/$(basename "${REPO_URL}" '.git')
 readonly CLONE_DIR
-EXEC_DIR=$(dirname "${ENTRY_PATH}")
-ENTRY_SCRIPT=$(basename "${ENTRY_PATH}")
+readonly EXEC_DIR
+readonly ENTRY_SCRIPT
 
 #####################################################################
 # main routine
@@ -95,7 +97,7 @@ ENTRY_SCRIPT=$(basename "${ENTRY_PATH}")
 [ -d "${CLONE_DIR}" ] && rm -rf "${CLONE_DIR}"
 
 # download the repository
-if ! git clone "${REPO_URL}" "${CLONE_DIR}"; then
+if ! git clone -q "${REPO_URL}" "${CLONE_DIR}"; then
   echo "ERROR:${0##*/}: the repo is invalid <${REPO_URL}>" 1>&2
   exit 1
 fi
@@ -122,7 +124,7 @@ if [ -z "${BRANCH}" ]; then
 fi
 
 # checkout
-if ! git checkout "${BRANCH}"; then
+if ! git checkout -q "${BRANCH}"; then
   echo "ERROR:${0##*/}: the branch/hash is invalid <${BRANCH}>" 1>&2
   exit 1
 fi
@@ -144,7 +146,7 @@ if [ ! -x "${ENTRY_SCRIPT}" ]; then
 fi
 
 # execute the task
-if ! ./"${ENTRY_SCRIPT}"; then
+if ! "./${ENTRY_SCRIPT}"; then
   echo "ERROR:${0##*/}: some execution error on <${CLONE_DIR}/${ENTRY_PATH}>" 1>&2
   exit 1
 fi
