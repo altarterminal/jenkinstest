@@ -7,15 +7,15 @@ set -eu
 
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
-Usage   : ${0##*/} <exec list>
-Options :
+Usage   : ${0##*/}
+Options : -l<task list>
 
-execute tasks on <exec list>.
+Execute tasks on <exec list>.
 
-specify the <exec list> (default: task.json).
+Cloned repositories are stored in './repo'.
+Ansible environment is used or made on '${HOME}/period_ws/ansible_env'
 
-cloned repositories are stored in 'all_store'.
-ansible environment is used or made on '${HOME}/period_ws/ansible_env'
+-l: specify the task list (default: ./task.json)
 USAGE
   exit 1
 }
@@ -24,13 +24,15 @@ USAGE
 # parameter
 #####################################################################
 
-opr='task.json'
+opr=''
+opt_l='./task.json'
 
 i=1
 for arg in ${1+"$@"}
 do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
+    -l*)                 opt_l=${arg#-l}      ;;
     *)
       if [ $i -eq $# ]; then
         opr=${arg}
@@ -49,39 +51,59 @@ if ! type jq >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -f "${opr}" ] || [ ! -r "${opr}" ]; then
-  echo "ERROR:${0##*/}: list cannot be accessed <${opr}>" 1>&2
+if [ ! -f "${opt_l}" ] || [ ! -r "${opt_l}" ]; then
+  echo "ERROR:${0##*/}: list cannot be accessed <${opt_l}>" 1>&2
   exit 1
 fi
 
-if ! jq . "${opr}" >/dev/null 2>&1; then
-  echo "ERROR:${0##*/}: list is invalid <${opr}>" 1>&2
+if ! jq . "${opt_l}" >/dev/null 2>&1; then
+  echo "ERROR:${0##*/}: list is invalid <${opt_l}>" 1>&2
   exit 1
 fi
 
-readonly EXEC_LIST="${opr}"
+readonly EXEC_LIST="${opt_l}"
 
-readonly CUR_DIR="${0%/*}"
-readonly EACH_EXEC="${CUR_DIR}/each_run.sh"
-readonly STORE_DIR="${CUR_DIR}/all_store"
+readonly THIS_DIR="${0%/*}"
+readonly EACH_EXEC="${THIS_DIR}/each_run.sh"
+readonly REPO_DIR="${THIS_DIR}/repo"
 
-readonly ANSIBLE_SETUP="${CUR_DIR}/setup_ansible.sh"
 readonly ANSIBLE_ENV_PATH="${HOME}/period_ws/ansible_env"
+
+readonly ANSIBLE_SETUP_REPO='https://github.com/altarterminal/ansibletest.git'
+readonly ANSIBLE_SETUP_TOP_DIR="${REPO_DIR}/$(basename ${ANSIBLE_SETUP_REPO} .git)"
+readonly ANSIBLE_SETUP_DIR="${ANSIBLE_SETUP_TOP_DIR}/ansiblesetup"
 
 #####################################################################
 # prepare
 #####################################################################
 
-# prepare ansible
-if ! type ansible >/dev/null 2>&1; then
-  # check ansible env. install it if it is not found
-  ./"${ANSIBLE_SETUP}" "${ANSIBLE_ENV_PATH}"
+mkdir -p "${REPO_DIR}"
 
-  # enable ansible
+if [ -d "${ANSIBLE_SETUP_TOP_DIR}" ]; then
+  rm -rf "${ANSIBLE_SETUP_TOP_DIR}"
+fi
+
+if ! git clone -q "${ANSIBLE_SETUP_REPO}" "${ANSIBLE_SETUP_TOP_DIR}"; then
+  echo "ERROR:${0##*/}: git clone failed <${ANSIBLE_SETUP_REPO}>" 1>&2
+  exit 1
+fi
+
+if ! type ansible >/dev/null 2>&1; then
+  # Check ansible env. Install ansible if it is not found
+  "${ANSIBLE_SETUP_DIR}/setup_command.sh" "${ANSIBLE_ENV_PATH}"
+
+  # Enable ansible
   . "${ANSIBLE_ENV_PATH}/bin/activate"
 fi
 
-#####################################################################
+"${ANSIBLE_SETUP_DIR}/setup_config.sh" -f
+"${ANSIBLE_SETUP_DIR}/setup_sshkey.sh" -f
+
+# This is used for public ansible
+export ANSIBLE_CONFIG=$(realpath './ansible.cfg')
+export ANSIBLE_PRIVATE_KEY_FILE=$(realpath './ansible_ssh_key')
+
+####################################################################
 # main routine
 #####################################################################
 
@@ -101,7 +123,7 @@ do
     echo "=========================================================="
   } 1>&2
 
-  if "${EACH_EXEC}" -d"${STORE_DIR}" -u"${url}" -b"${branch}" "${entry}" 1>&2; then
+  if "${EACH_EXEC}" -d"${REPO_DIR}" -u"${url}" -b"${branch}" "${entry}" 1>&2; then
     echo "OK:${url}:${branch}:${entry}"
     echo "INFO:${0##*/}: succeeded <${url}:${branch}:${entry}>" 1>&2
   else
