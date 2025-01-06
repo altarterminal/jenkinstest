@@ -43,7 +43,7 @@ pipeline {
       stage("Main") {
         steps {
           sh '''
-          cd period 
+          cd ./taskfw
           PATH="${PATH}:/opt/homebrew/bin" ./all_run.sh task.json
           '''
         }
