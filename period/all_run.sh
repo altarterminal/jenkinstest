@@ -13,7 +13,6 @@ Options : -l<task list>
 Execute tasks on <exec list>.
 
 Cloned repositories are stored in './repo'.
-Ansible environment is used or made on '${HOME}/period_ws/ansible_env'
 
 -l: specify the task list (default: ./task.json)
 USAGE
@@ -67,11 +66,11 @@ readonly THIS_DIR="${0%/*}"
 readonly EACH_EXEC="${THIS_DIR}/each_run.sh"
 readonly REPO_DIR="${THIS_DIR}/repo"
 
-readonly ANSIBLE_ENV_PATH="${HOME}/period_ws/ansible_env"
-
 readonly ANSIBLE_SETUP_REPO='https://github.com/altarterminal/ansibletest.git'
 readonly ANSIBLE_SETUP_TOP_DIR="${REPO_DIR}/$(basename ${ANSIBLE_SETUP_REPO} .git)"
-readonly ANSIBLE_SETUP_DIR="${ANSIBLE_SETUP_TOP_DIR}/ansiblesetup"
+readonly ANSIBLE_SETUP_DIR="${ANSIBLE_SETUP_TOP_DIR}/setup"
+
+readonly ANSIBLE_ENV_PATH="${HOME}/taskfw/ansible_env"
 
 #####################################################################
 # prepare
@@ -88,20 +87,10 @@ if ! git clone -q "${ANSIBLE_SETUP_REPO}" "${ANSIBLE_SETUP_TOP_DIR}"; then
   exit 1
 fi
 
-if ! type ansible >/dev/null 2>&1; then
-  # Check ansible env. Install ansible if it is not found
-  "${ANSIBLE_SETUP_DIR}/setup_command.sh" "${ANSIBLE_ENV_PATH}"
+. $("${ANSIBLE_SETUP_DIR}/setup_all.sh" -e"${ANSIBLE_ENV_PATH}")
 
-  # Enable ansible
-  . "${ANSIBLE_ENV_PATH}/bin/activate"
-fi
-
-"${ANSIBLE_SETUP_DIR}/setup_config.sh" -f
-"${ANSIBLE_SETUP_DIR}/setup_sshkey.sh" -f
-
-# This is used for public ansible
-export ANSIBLE_CONFIG=$(realpath './ansible.cfg')
-export ANSIBLE_PRIVATE_KEY_FILE=$(realpath './ansible_ssh_key')
+which ansible
+exit
 
 ####################################################################
 # main routine
