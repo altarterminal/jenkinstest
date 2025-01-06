@@ -72,12 +72,8 @@ fi
 
 readonly ENTRY_PATH="${opr}"
 readonly REPO_URL="${opt_u}"
-readonly BRANCH="${opt_b}"
+readonly BRANCH_RAW="${opt_b}"
 readonly CLONE_TOP_DIR="${opt_d}"
-
-if [ -n "${BRANCH}" ]; then
-  readonly BRANCH
-fi
 
 CUR_DIR=$(pwd)
 CLONE_DIR=${CLONE_TOP_DIR}/$(basename "${REPO_URL}" '.git')
@@ -110,7 +106,7 @@ if ! cd "${CLONE_DIR}"; then
 fi
 
 # select the default branch
-if [ -z "${BRANCH}" ]; then
+if [ -z "${BRANCH_RAW}" ]; then
   if   git branch -r | grep -q '^ *origin/master$'; then
     readonly BRANCH='origin/master'
     echo "INFO:${0##*/}: hash is switched to <master>" 1>&2
@@ -121,6 +117,8 @@ if [ -z "${BRANCH}" ]; then
     echo "ERROR:${0##*/}: some error for <${REPO_URL}>" 1>&2
     exit 1
   fi
+else
+  readonly BRANCH="${BRANCH_RAW}"
 fi
 
 # checkout
