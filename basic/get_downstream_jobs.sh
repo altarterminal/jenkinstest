@@ -71,9 +71,9 @@ xq -r "${SCRIPT_PATH}"                                              |
 
 expand                                                              |
 
-grep 'build '                                                       |
+grep 'build *job:'                                                  |
 
-sed 's!^.* *job: *\([^ ]*\) *.*$!\1!'                               |
+sed -E 's!^.*build *job: *([^ ,]*),? *.*$!\1!'                      |
 
 sed 's!^"!!; s!"$!!'                                                |
 sed 's!^'"'"'!!; s!'"'"'$!!'                                        |
