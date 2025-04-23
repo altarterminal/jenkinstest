@@ -7,10 +7,12 @@ set -eu
 
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
-Usage   : ${0##*/} <job definition>
-Options : 
+Usage   : ${0##*/} <job name>
+Options : -k<access key>
 
-Get the downstream jobs.
+Get downstream jobs of the job.
+
+-k: Specify the access key for jenkins master (default: ${HOME}/.ssh/id_rsa).
 USAGE
   exit 1
 }
@@ -20,12 +22,14 @@ USAGE
 #####################################################################
 
 opr=''
+opt_k="${HOME}/.ssh/id_rsa"
 
 i=1
 for arg in ${1+"$@"}
 do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
+    -k*)                 opt_k="${arg#-k}"    ;;
     *)
       if [ $i -eq $# ] && [ -z "${opr}" ]; then
         opr="${arg}"
@@ -44,30 +48,27 @@ if ! type xq >/dev/null 2>&1; then
   exit 1
 fi
 
-if   [ "${opr}" = '' ] || [ "${opr}" = '-' ]; then
-  opr='-'
-elif [ ! -f "${opr}" ] || [ ! -r "${opr}" ]; then
-  echo "ERROR:${0##*/}: invalid file specified" 1>&2
+if [ "${opr}" = '' ]; then
+  echo "ERROR:${0##*/}: job name must be specified" 1>&2
   exit 1
-else
-  :
 fi
 
-JOB_FILE="${opr}"
+JOB_NAME="${opr}"
+ACCESS_KEY="${opt_k}"
 
 #####################################################################
 # setting
 #####################################################################
 
-SCRIPT_PATH='."flow-definition"."definition"."script"'
+THIS_DIR="$(dirname "$0")"
+
+BASE_TOOL="${THIS_DIR}/get_job_script.sh"
 
 #####################################################################
 # main routine
 #####################################################################
 
-cat "${JOB_FILE}"                                                   |
-
-xq -r "${SCRIPT_PATH}"                                              |
+"${BASE_TOOL}" -k"${ACCESS_KEY}" "${JOB_NAME}"                      |
 
 expand                                                              |
 
@@ -78,4 +79,5 @@ sed -E 's!^.*build *job: *([^ ,]*),? *.*$!\1!'                      |
 sed 's!^"!!; s!"$!!'                                                |
 sed 's!^'"'"'!!; s!'"'"'$!!'                                        |
 
-cat
+sort                                                                |
+uniq

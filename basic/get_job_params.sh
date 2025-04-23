@@ -8,9 +8,11 @@ set -eu
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
 Usage   : ${0##*/} <job name>
-Options : 
+Options : -k<access key>
 
 Get parameters of the job.
+
+-k: Specify the access key for jenkins master (default: ${HOME}/.ssh/id_rsa).
 USAGE
   exit 1
 }
@@ -20,12 +22,14 @@ USAGE
 #####################################################################
 
 opr=''
+opt_k="${HOME}/.ssh/id_rsa"
 
 i=1
 for arg in ${1+"$@"}
 do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
+    -k*)                 opt_k="${arg#-k}"    ;;
     *)
       if [ $i -eq $# ] && [ -z "${opr}" ]; then
         opr="${arg}"
@@ -57,6 +61,7 @@ else
 fi
 
 JOB_NAME="${opr}"
+ACCESS_KEY="${opt_k}"
 
 #####################################################################
 # setting
@@ -72,7 +77,7 @@ PARAM_PATH='."flow-definition"."properties"."hudson.model.ParametersDefinitionPr
 # main routine
 #####################################################################
 
-"${BASE_TOOL}" "${JOB_NAME}"                                        |
+"${BASE_TOOL}" -k"${ACCESS_KEY}" "${JOB_NAME}"                      |
 
 xq -r "${PARAM_PATH}"                                               |
 
