@@ -7,7 +7,7 @@ set -eu
 
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
-Usage   : ${0##*/} <job definition>
+Usage   : ${0##*/} <job name>
 Options : 
 
 Get parameters of the job.
@@ -49,30 +49,32 @@ if ! type jq >/dev/null 2>&1; then
   exit 1
 fi
 
-if   [ "${opr}" = '' ] || [ "${opr}" = '-' ]; then
-  opr='-'
-elif [ ! -f "${opr}" ] || [ ! -r "${opr}" ]; then
-  echo "ERROR:${0##*/}: invalid file specified" 1>&2
+if [ "${opr}" = '' ]; then
+  echo "ERROR:${0##*/}: job name must be specified specified" 1>&2
   exit 1
 else
   :
 fi
 
-JOB_FILE="${opr}"
+JOB_NAME="${opr}"
 
 #####################################################################
 # setting
 #####################################################################
 
-SCRIPT_PATH='."flow-definition"."properties"."hudson.model.ParametersDefinitionProperty"."parameterDefinitions"'
+THIS_DIR="$(dirname "$0")"
+
+BASE_TOOL="${THIS_DIR}/get_job_config.sh"
+
+PARAM_PATH='."flow-definition"."properties"."hudson.model.ParametersDefinitionProperty"."parameterDefinitions"'
 
 #####################################################################
 # main routine
 #####################################################################
 
-cat "${JOB_FILE}"                                                   |
+"${BASE_TOOL}" "${JOB_NAME}"                                        |
 
-xq -r "${SCRIPT_PATH}"                                              |
+xq -r "${PARAM_PATH}"                                               |
 
 jq 'to_entries'                                                     |
 jq -c '.[]'                                                         |
