@@ -48,6 +48,8 @@ if   [ "${opr}" = '' ] || [ "${opr}" = '-' ]; then
 elif [ ! -f "${opr}" ] || [ ! -r "${opr}"  ]; then
   echo "ERROR:${0##*/}: invalid file specified <${opr}>" 1>&2
   exit 1
+else
+  :
 fi
 
 if [ ! -f "${opt_k}" ] || [ ! -r "${opt_k}" ]; then
@@ -76,7 +78,7 @@ TEMP_NAME="${TMPDIR:-/tmp}/${0##*/}_${THIS_DATE}_XXXXXX"
 
 TEMP_FILE="$(mktemp "${TEMP_NAME}")"
 
-trap "[ -e ${TEMP_FILE} ]   && rm ${TEMP_FILE}" EXIT
+trap "[ -e ${TEMP_FILE} ] && rm ${TEMP_FILE}" EXIT
 
 cat "${JENKINS_FILE}" >"${TEMP_FILE}"
 
