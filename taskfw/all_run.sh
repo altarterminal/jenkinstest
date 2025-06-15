@@ -14,7 +14,7 @@ Execute tasks on <exec list>.
 
 Cloned repositories are stored in './repo'.
 
--l: specify the task list (default: ./task.json)
+-l: Specify the task list (default: ./task.json).
 USAGE
   exit 1
 }
@@ -31,10 +31,10 @@ for arg in ${1+"$@"}
 do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
-    -l*)                 opt_l=${arg#-l}      ;;
+    -l*)                 opt_l="${arg#-l}"    ;;
     *)
       if [ $i -eq $# ]; then
-        opr=${arg}
+        opr="${arg}"
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
         exit 1
@@ -62,7 +62,7 @@ fi
 
 readonly EXEC_LIST="${opt_l}"
 
-readonly THIS_DIR="${0%/*}"
+readonly THIS_DIR="$(dirname "$0")"
 readonly EACH_EXEC="${THIS_DIR}/each_run.sh"
 readonly REPO_DIR="${THIS_DIR}/repo"
 
