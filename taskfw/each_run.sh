@@ -13,9 +13,9 @@ Options : -d<repo dir>
 Execute a task with <entry script> on <repo url> and <branch or hash>.
 Entry script must be specified with relative path to the top of the repo.
 
--u: specify the repository url.
--b: specify the branch or hash. master/main is used if nothing is specified.
--d: specify the directory in which the repositories are cloned (default: .)
+-u: Specify the repository url.
+-b: Specify the branch or hash. master/main is used if nothing is specified.
+-d: Specify the directory in which the repositories are cloned (default: .).
 USAGE
   exit 1
 }
@@ -34,12 +34,12 @@ for arg in ${1+"$@"}
 do
   case "${arg}" in
     -h|--help|--version) print_usage_and_exit ;;
-    -u*)                 opt_u=${arg#-u}      ;;
-    -b*)                 opt_b=${arg#-b}      ;;
-    -d*)                 opt_d=${arg#-d}      ;;
+    -u*)                 opt_u="${arg#-u}"    ;;
+    -b*)                 opt_b="${arg#-b}"    ;;
+    -d*)                  opt_d="${arg#-d}"    ;;
     *)
       if [ $i -eq $# ] && [ -z "${opr}" ]; then
-        opr=${arg}
+        opr="${arg}"
       else
         echo "ERROR:${0##*/}: invalid args" 1>&2
         exit 1
@@ -70,20 +70,15 @@ else
   echo "INFO:${0##*/}: made the directory <${opt_d}>" 1>&2
 fi
 
-readonly ENTRY_PATH="${opr}"
-readonly REPO_URL="${opt_u}"
-readonly BRANCH_RAW="${opt_b}"
-readonly CLONE_TOP_DIR="${opt_d}"
+ENTRY_PATH="${opr}"
+REPO_URL="${opt_u}"
+BRANCH_RAW="${opt_b}"
+CLONE_TOP_DIR="${opt_d}"
 
 CUR_DIR=$(pwd)
 CLONE_DIR=${CLONE_TOP_DIR}/$(basename "${REPO_URL}" '.git')
-EXEC_DIR="${ENTRY_PATH%/*}"
-ENTRY_SCRIPT="${ENTRY_PATH##*/}"
-
-readonly CUR_DIR
-readonly CLONE_DIR
-readonly EXEC_DIR
-readonly ENTRY_SCRIPT
+EXEC_DIR="$(dirname "${ENTRY_PATH}")"
+ENTRY_SCRIPT="$(basename "${ENTRY_PATH}")"
 
 #####################################################################
 # main routine
