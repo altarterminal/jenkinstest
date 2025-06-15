@@ -7,15 +7,15 @@ set -eu
 
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
-Usage   : ${0##*/} -u<repo url> -b<branch or hash> <entry script>
-Options : -d<repo dir>
+Usage   : ${0##*/} -u<repo url> <entry script>
+Options : -b<branch or hash> -d<repo dir>
 
 Execute a task with <entry script> on <repo url> and <branch or hash>.
 Entry script must be specified with relative path to the top of the repo.
 
 -u: Specify the repository url.
--b: Specify the branch or hash. master/main is used if nothing is specified.
--d: Specify the directory in which the repositories are cloned (default: .).
+-b: Specify the branch or hash (default: origin/master or origin/main).
+-d: Specify the directory in which the repositories are cloned (default: ./repo).
 USAGE
   exit 1
 }
@@ -27,7 +27,7 @@ USAGE
 opr=''
 opt_u=''
 opt_b=''
-opt_d='.'
+opt_d='./repo'
 
 i=1
 for arg in ${1+"$@"}
@@ -36,7 +36,7 @@ do
     -h|--help|--version) print_usage_and_exit ;;
     -u*)                 opt_u="${arg#-u}"    ;;
     -b*)                 opt_b="${arg#-b}"    ;;
-    -d*)                  opt_d="${arg#-d}"    ;;
+    -d*)                 opt_d="${arg#-d}"    ;;
     *)
       if [ $i -eq $# ] && [ -z "${opr}" ]; then
         opr="${arg}"
@@ -73,12 +73,23 @@ fi
 ENTRY_PATH="${opr}"
 REPO_URL="${opt_u}"
 BRANCH_RAW="${opt_b}"
-CLONE_TOP_DIR="${opt_d}"
+REPO_DIR="${opt_d}"
 
-CUR_DIR=$(pwd)
-CLONE_DIR=${CLONE_TOP_DIR}/$(basename "${REPO_URL}" '.git')
-EXEC_DIR="$(dirname "${ENTRY_PATH}")"
+#####################################################################
+# setting
+#####################################################################
+
+CUR_DIR="$(pwd)"
+CLONE_DIR=${REPO_DIR}/$(basename "${REPO_URL}" '.git')
+
+ENTRY_DIR="$(dirname "${ENTRY_PATH}")"
 ENTRY_SCRIPT="$(basename "${ENTRY_PATH}")"
+
+#####################################################################
+# prepare
+#####################################################################
+
+trap 'cd "${CUR_DIR}"' EXIT
 
 #####################################################################
 # main routine
@@ -89,12 +100,10 @@ ENTRY_SCRIPT="$(basename "${ENTRY_PATH}")"
 
 # download the repository
 if ! git clone -q "${REPO_URL}" "${CLONE_DIR}"; then
-  echo "ERROR:${0##*/}: the repo is invalid <${REPO_URL}>" 1>&2
+  echo "ERROR:${0##*/}: git clone failed <${REPO_URL}>" 1>&2
   exit 1
 fi
 
-# get into the target directory
-trap 'cd "${CUR_DIR}"' EXIT
 if ! cd "${CLONE_DIR}"; then
   echo "ERROR:${0##*/}: cannot move to <${CLONE_DIR}>" 1>&2
   exit 1
@@ -103,28 +112,28 @@ fi
 # select the default branch
 if [ -z "${BRANCH_RAW}" ]; then
   if   git branch -r | grep -q '^ *origin/master$'; then
-    readonly BRANCH='origin/master'
+    BRANCH='origin/master'
     echo "INFO:${0##*/}: hash is switched to <master>" 1>&2
   elif git branch -r | grep -q '^ *origin/main$'; then
-    readonly BRANCH='origin/main'
+    BRANCH='origin/main'
     echo "INFO:${0##*/}: hash is switched to <main>" 1>&2
   else
     echo "ERROR:${0##*/}: some error for <${REPO_URL}>" 1>&2
     exit 1
   fi
 else
-  readonly BRANCH="${BRANCH_RAW}"
+  BRANCH="${BRANCH_RAW}"
 fi
 
 # checkout
 if ! git checkout -q "${BRANCH}"; then
-  echo "ERROR:${0##*/}: the branch/hash is invalid <${BRANCH}>" 1>&2
+  echo "ERROR:${0##*/}: git checkout failed <${BRANCH}>" 1>&2
   exit 1
 fi
 
 # change the current directory
-if ! cd "${EXEC_DIR}"; then
-  echo "ERROR:${0##*/}: cannot move to <${EXEC_DIR}>" 1>&2
+if ! cd "${ENTRY_DIR}"; then
+  echo "ERROR:${0##*/}: cannot move to <${ENTRY_DIR}>" 1>&2
   exit 1
 fi
 

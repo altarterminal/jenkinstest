@@ -23,7 +23,6 @@ USAGE
 # parameter
 #####################################################################
 
-opr=''
 opt_l='./task.json'
 
 i=1
@@ -33,12 +32,8 @@ do
     -h|--help|--version) print_usage_and_exit ;;
     -l*)                 opt_l="${arg#-l}"    ;;
     *)
-      if [ $i -eq $# ]; then
-        opr="${arg}"
-      else
-        echo "ERROR:${0##*/}: invalid args" 1>&2
-        exit 1
-      fi
+      echo "ERROR:${0##*/}: invalid args" 1>&2
+      exit 1
       ;;
   esac
 
@@ -60,17 +55,22 @@ if ! jq . "${opt_l}" >/dev/null 2>&1; then
   exit 1
 fi
 
-readonly EXEC_LIST="${opt_l}"
+EXEC_LIST="${opt_l}"
 
-readonly THIS_DIR="$(dirname "$0")"
-readonly EACH_EXEC="${THIS_DIR}/each_run.sh"
-readonly REPO_DIR="${THIS_DIR}/repo"
+#####################################################################
+# setting
+#####################################################################
 
-readonly ANSIBLE_SETUP_REPO='https://github.com/altarterminal/ansibletest.git'
-readonly ANSIBLE_SETUP_TOP_DIR="${REPO_DIR}/$(basename ${ANSIBLE_SETUP_REPO} .git)"
-readonly ANSIBLE_SETUP_DIR="${ANSIBLE_SETUP_TOP_DIR}/setup"
+THIS_DIR="$(dirname "$0")"
 
-readonly ANSIBLE_ENV_PATH="${HOME}/taskfw/ansible_env"
+EACH_EXEC="${THIS_DIR}/each_run.sh"
+REPO_DIR="${THIS_DIR}/repo"
+
+ANSIBLE_SETUP_REPO='https://github.com/altarterminal/ansibletest.git'
+ANSIBLE_SETUP_DIR="${REPO_DIR}/$(basename ${ANSIBLE_SETUP_REPO} .git)"
+ANSIBLE_SETUP_SCRIPT="${ANSIBLE_SETUP_DIR}/setup/setup_all.sh"
+
+ANSIBLE_ENV_PATH="${HOME}/taskfw/ansible_env"
 
 #####################################################################
 # prepare
@@ -78,16 +78,21 @@ readonly ANSIBLE_ENV_PATH="${HOME}/taskfw/ansible_env"
 
 mkdir -p "${REPO_DIR}"
 
-if [ -d "${ANSIBLE_SETUP_TOP_DIR}" ]; then
-  rm -rf "${ANSIBLE_SETUP_TOP_DIR}"
+if [ -d "${ANSIBLE_SETUP_DIR}" ]; then
+  rm -rf "${ANSIBLE_SETUP_DIR}"
 fi
 
-if ! git clone -q "${ANSIBLE_SETUP_REPO}" "${ANSIBLE_SETUP_TOP_DIR}"; then
+if ! git clone -q "${ANSIBLE_SETUP_REPO}" "${ANSIBLE_SETUP_DIR}"; then
   echo "ERROR:${0##*/}: git clone failed <${ANSIBLE_SETUP_REPO}>" 1>&2
   exit 1
 fi
 
-. $("${ANSIBLE_SETUP_DIR}/setup_all.sh" -e"${ANSIBLE_ENV_PATH}")
+if [ ! -f "${ANSIBLE_SETUP_SCRIPT}" ] || [ ! -x "${ANSIBLE_SETUP_SCRIPT}" ]; then
+  echo "ERROR:${0##*/}: invalid script specified <${ANSIBLE_SETUP_SCRIPT}>" 1>&2
+  exit 1
+fi
+
+. "$("${ANSIBLE_SETUP_SCRIPT}" -e"${ANSIBLE_ENV_PATH}")"
 
 ####################################################################
 # main routine
